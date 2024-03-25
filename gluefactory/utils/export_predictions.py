@@ -12,7 +12,7 @@ import torch
 from tqdm import tqdm
 
 from .tensor import batch_to_device
-
+import time
 
 @torch.no_grad()
 def export_predictions(
@@ -77,5 +77,8 @@ def export_predictions(
             continue
 
         del pred
+
+    print('total sp time:', model.total_sp_ms, 'avg time:', model.total_sp_ms/1500.0)
+    print('total lg time:', model.total_lg_ms, 'avg time:', model.total_lg_ms/1500.0)
     hfile.close()
     return output_file
