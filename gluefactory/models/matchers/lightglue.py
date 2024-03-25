@@ -104,12 +104,14 @@ class Attention(nn.Module):
 
     def forward(self, q, k, v, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         if self.enable_flash and q.device.type == "cuda":
+            assert False
             # use torch 2.0 scaled_dot_product_attention with flash
             if FLASH_AVAILABLE:
                 args = [x.half().contiguous() for x in [q, k, v]]
                 v = F.scaled_dot_product_attention(*args, attn_mask=mask).to(q.dtype)
                 return v if mask is None else v.nan_to_num()
         elif FLASH_AVAILABLE:
+            assert False
             args = [x.contiguous() for x in [q, k, v]]
             v = F.scaled_dot_product_attention(*args, attn_mask=mask)
             return v if mask is None else v.nan_to_num()
@@ -385,6 +387,7 @@ class LightGlue(nn.Module):
             self.load_state_dict(state_dict, strict=False)
 
     def compile(self, mode="reduce-overhead"):
+        assert False
         if self.conf.width_confidence != -1:
             warnings.warn(
                 "Point pruning is partially disabled for compiled forward.",
