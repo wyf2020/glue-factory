@@ -62,6 +62,8 @@ class TwoViewPipeline(BaseModel):
         self.total_lg_ms = 0
         self.start_event = torch.cuda.Event(enable_timing=True)
         self.end_event = torch.cuda.Event(enable_timing=True)
+        self.start_event2 = torch.cuda.Event(enable_timing=True)
+        self.end_event2 = torch.cuda.Event(enable_timing=True)
         self.warmup = False
 
 
@@ -76,6 +78,7 @@ class TwoViewPipeline(BaseModel):
             pred_i = {**pred_i, **self.extractor({**data_i, **pred_i})}
         self.end_event.record()
         torch.cuda.synchronize()
+        self.total_sp_ms += self.start_event.elapsed_time(self.end_event)
 
         return pred_i
 
@@ -108,24 +111,22 @@ class TwoViewPipeline(BaseModel):
             self.warmup=True
 
         pred0 = self.extract_view(data, "0")
-        self.total_sp_ms += self.start_event.elapsed_time(self.end_event)
         pred1 = self.extract_view(data, "1")
-        self.total_sp_ms += self.start_event.elapsed_time(self.end_event)
         pred = {
             **{k + "0": v for k, v in pred0.items()},
             **{k + "1": v for k, v in pred1.items()},
         }
 
-        self.start_event.record()
+        self.start_event2.record()
         if self.conf.matcher.name:
             pred = {**pred, **self.matcher({**data, **pred})}
         if self.conf.filter.name:
             pred = {**pred, **self.filter({**data, **pred})}
         if self.conf.solver.name:
             pred = {**pred, **self.solver({**data, **pred})}
-        self.end_event.record()
+        self.end_event2.record()
         torch.cuda.synchronize()
-        self.total_lg_ms += self.start_event.elapsed_time(self.end_event)
+        self.total_lg_ms += self.start_event2.elapsed_time(self.end_event2)
 
         if self.conf.ground_truth.name and self.conf.run_gt_in_forward:
             gt_pred = self.ground_truth({**data, **pred})
