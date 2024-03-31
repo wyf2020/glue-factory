@@ -18,9 +18,18 @@ class LightGlue(BaseModel):
     def _init(self, conf):
         dconf = OmegaConf.to_container(conf)
         self.net = LightGlue_(dconf.pop("features"), **dconf)
+        # self.net = LightGlue_(dconf.pop("features"), **dconf).half() # !1
         self.set_initialized()
 
     def _forward(self, data):
+        # view0 = {
+        #     **{k: data[k + "0"].half() for k in ["keypoints", "descriptors"]}, # !1
+        #     **data["view0"],
+        # }
+        # view1 = {
+        #     **{k: data[k + "1"].half() for k in ["keypoints", "descriptors"]},
+        #     **data["view1"],
+        # }
         view0 = {
             **{k: data[k + "0"] for k in ["keypoints", "descriptors"]},
             **data["view0"],
