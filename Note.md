@@ -90,6 +90,6 @@ Or you can just install torch=1.13.1 to disable the Flash-Attention, but leads t
     pose_results_i = eval_relative_pose_robust(
         data,
         pred,
-        {"estimator": 'opencv', "ransac_th": 0.5},
+        {"estimator": 'opencv', "ransac_th": 1.0},
     )
 ```
